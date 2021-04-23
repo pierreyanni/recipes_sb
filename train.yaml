@@ -32,9 +32,10 @@ error_stats: !name:speechbrain.utils.metric_stats.MetricStats
 ckpt_interval_minutes: 15 # save checkpoint every N min
 
 # Training Parameters
+pretrained_model: True
 number_of_epochs: 10
-batch_size: 12  # 8 on colab
-gradient_accumulation: 1
+batch_size: 8  # 8 on colab
+gradient_accumulation: 3
 lr: 0.00001 # 0.001
 base_lr: 0.00000001
 max_lr: !ref <lr>

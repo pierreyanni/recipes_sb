@@ -211,7 +211,7 @@ class SpkIdBrain(sb.Brain):
                              "predictions.csv")
             with open(save_file, 'w', newline='') as csvfile:
                 outwriter = csv.writer(csvfile, delimiter=',')
-                outwriter.writerow(['id', 'prediction', 'true value'])
+                outwriter.writerow(['id', 'prediction', 'true_value'])
         
         self.on_evaluate_start(max_key=max_key, min_key=min_key)  # done before
         self.modules.eval()
@@ -342,6 +342,17 @@ if __name__ == "__main__":
 
     # Create dataset objects "train", "valid", and "test".
     datasets = dataio_prep(hparams)
+
+    # import pretrained model
+    if hparams["pretrained_model"]:
+        sr_model = sb.pretrained.SpeakerRecognition.from_hparams(
+        source='speechbrain/spkrec-ecapa-voxceleb'
+        )
+        # make sure all parameters are updated(pretrained parameters are frozen)
+        for params in sr_model.modules.parameters():
+            params.requires_grad = True
+        # replace initial weights by pretrained model weights
+        hparams["modules"]["embedding_model"]: sr_model.modules.embedding_model
 
     # Initialize the Brain object to prepare for mask training.
     spk_id_brain = SpkIdBrain(
