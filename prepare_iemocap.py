@@ -20,7 +20,7 @@ from speechbrain.dataio.dataio import read_audio
 import gdown # for download from google drive
 
 logger = logging.getLogger(__name__)
-IEMOCAP_URL = "https://drive.google.com/uc?id=19sGwEpTuCT9VFBgr0rvezkbMnHDOMsXy"
+IEMOCAP_URL = "https://drive.google.com/uc?id=14-JdlRkJ6XTihMyp78AwjhfbdMLnPRPw"
 SAMPLERATE = 16000
 
 

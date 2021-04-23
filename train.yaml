@@ -31,10 +31,9 @@ error_stats: !name:speechbrain.utils.metric_stats.MetricStats
 
 ckpt_interval_minutes: 15 # save checkpoint every N min
 
-
 # Training Parameters
-number_of_epochs: 25
-batch_size: 3  # 8 on colab
+number_of_epochs: 10
+batch_size: 12  # 8 on colab
 gradient_accumulation: 1
 lr: 0.00001 # 0.001
 base_lr: 0.00000001
@@ -57,7 +56,7 @@ out_n_neurons: 4 # 3 + neutral
 dataloader_options:
     batch_size: !ref <batch_size>
     shuffle: !ref <shuffle>
-    num_workers: 0 # 2 on linux but 0 works on windows
+    num_workers: 2  # 2 on linux but 0 works on windows
 
 # Functions
 compute_features: !new:speechbrain.lobes.features.Fbank
@@ -122,13 +121,13 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
 # in sequence. If concat_augment = True, all the augmented signals
 # # are concatenated in a single big batch.
 
-augment_pipeline: [
-    !ref <augment_wavedrop>,
-    !ref <augment_speed>,
-    !ref <add_rev>,
-    !ref <add_noise>,
-    !ref <add_rev_noise>
-]
+# augment_pipeline: [
+#    !ref <augment_wavedrop>,
+#    !ref <augment_speed>,
+#    !ref <add_rev>,
+#    !ref <add_noise>,
+#    !ref <add_rev_noise>
+# ]
 concat_augment: True
 
 mean_var_norm: !new:speechbrain.processing.features.InputNormalization

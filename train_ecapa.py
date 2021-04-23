@@ -27,8 +27,11 @@ class SpkIdBrain(sb.Brain):
             # Applying the augmentation pipeline
             wavs_aug_tot = []
             wavs_aug_tot.append(wavs)
-            for count, augment in enumerate(self.hparams.augment_pipeline):
 
+            augment_pipeline = getattr(self.hparams, "augment_pipeline", [])
+ 
+            for count, augment in enumerate(augment_pipeline):
+                
                 # Apply augment
                 wavs_aug = augment(wavs, lens)
 
@@ -203,7 +206,7 @@ class SpkIdBrain(sb.Brain):
             test_set = self.make_dataloader(
                 test_set, Stage.TEST, **test_loader_kwargs
             )
-            
+
             save_file = os.path.join(self.hparams.output_folder,
                              "predictions.csv")
             with open(save_file, 'w', newline='') as csvfile:
