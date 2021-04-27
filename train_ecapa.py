@@ -73,7 +73,7 @@ class SpkIdBrain(sb.Brain):
         (loss / self.hparams.gradient_accumulation).backward()
 
         if self.step % self.hparams.gradient_accumulation == 0:
-            # gradient clipping & early stop if loss is not fini
+            # gradient clipping & early stop if loss is not finite
             self.check_gradients(loss)
             self.optimizer.step()
             self.optimizer.zero_grad()
@@ -337,6 +337,7 @@ if __name__ == "__main__":
             "save_json_valid": hparams["valid_annotation"],
             "save_json_test": hparams["test_annotation"],
             "split_ratio": [80, 10, 10],
+            "balanced": hparams["balanced_dataset"]
         },
     )
 
