@@ -86,7 +86,7 @@ def prepare_data(
     
     # Random split the signal list into train, valid, and test sets.
     if balanced:
-        wav_lists = get_all_files_balanced(train_folder, match_and=extension)
+        wav_lists = get_all_files_balanced(train_folder)
         data_split = split_balanced_sets(wav_lists, split_ratio)
     else:
         wav_list = get_all_files(train_folder, match_and=extension)
@@ -164,7 +164,7 @@ def check_folders(*folders):
             return False
     return True
 
-def get_all_files_balanced(train_folder, match_and):
+def get_all_files_balanced(train_folder):
     """Returns a list of lists of file names, one for each session and emotion.
     
     Arguments
@@ -178,8 +178,9 @@ def get_all_files_balanced(train_folder, match_and):
     """
     wav_lists = []
     for dirpath, dirnames, filenames in os.walk(train_folder):
-        if filenames and match_and in filenames[0]:
-            wav_lists.append(filenames)
+        if filenames and ".wav" in filenames[0]:
+            files_paths= [os.path.join(dirpath, file) for file in filenames]
+            wav_lists.append(files_paths)
     return wav_lists
 
 def split_balanced_sets(wav_lists, split_ratio):
@@ -201,8 +202,7 @@ def split_balanced_sets(wav_lists, split_ratio):
     ------
     dictionary containing train, valid, and test splits.   
     """
-    data_split = {}
-    train, valid, test = [], [], []
+    data_split = {k: [] for k in ['train', 'valid', 'test']}
     for wav_list in wav_lists:
         random.shuffle(wav_list)
         i_train = round(split_ratio[0] / sum(split_ratio) * len(wav_list))
