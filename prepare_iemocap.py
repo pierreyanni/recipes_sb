@@ -30,6 +30,7 @@ def prepare_data(
     save_json_valid,
     save_json_test,
     split_ratio=[80, 10, 10],
+    balanced=True
     ):
     """
     Prepares the json files for the IEMOCAP dataset.
@@ -51,6 +52,10 @@ def prepare_data(
         and test sets, respecively. For instance split_ratio=[80, 10, 10] will
         assign 80% of the sentences to training, 10% for validation, and 10%
         for test.
+    balanced : bool
+        If True, train, valid and test sets balanced across emotions and
+        speakers (so that same speakers present in all sets). If False, random
+        assignment.
 
     Example
     -------
@@ -78,10 +83,14 @@ def prepare_data(
         f"Creating {save_json_train}, {save_json_valid}, and {save_json_test}"
     )
     extension = [".wav"]
-    wav_list = get_all_files(train_folder, match_and=extension)
-
+    
     # Random split the signal list into train, valid, and test sets.
-    data_split = split_sets(wav_list, split_ratio)
+    if balanced:
+        wav_lists = get_all_files_balanced(train_folder, match_and=extension)
+        data_split = split_balanced_sets(wav_lists, split_ratio)
+    else:
+        wav_list = get_all_files(train_folder, match_and=extension)
+        data_split = split_sets(wav_list, split_ratio)
 
     # Creating json files
     create_json(data_split["train"], save_json_train)
@@ -155,6 +164,55 @@ def check_folders(*folders):
             return False
     return True
 
+def get_all_files_balanced(train_folder, match_and):
+    """Returns a list of lists of file names, one for each session and emotion.
+    
+    Arguments
+    ---------
+    train_folder: str
+        Folder containing the data.
+    
+    Returns
+    -------
+    list containing lists of file names
+    """
+    wav_lists = []
+    for dirpath, dirnames, filenames in os.walk(train_folder):
+        if filenames and match_and in filenames[0]:
+            wav_lists.append(filenames)
+    return wav_lists
+
+def split_balanced_sets(wav_lists, split_ratio):
+    """"Constructs a balanced data set by making sure that every pair 
+    (session, emotion) is split between train, valid and test sets according
+    to split ratio. Notice that for each session, there is one male and one female
+    speaker.
+    
+    Arguments
+    ---------
+    wav_lists: list
+        list of lists of all signals in the dataset
+    split_ratio: list
+        List composed of three integers that sets split ratios for train, valid,
+        and test sets, respectively. For instance split_ratio=[80, 10, 10] will
+        assign 80% of the sentences to training, 10% for validation, and 10%
+        for test.
+    Returns
+    ------
+    dictionary containing train, valid, and test splits.   
+    """
+    data_split = {}
+    train, valid, test = [], [], []
+    for wav_list in wav_lists:
+        random.shuffle(wav_list)
+        i_train = round(split_ratio[0] / sum(split_ratio) * len(wav_list))
+        i_valid = round(sum(split_ratio[:2]) / sum(split_ratio) * len(wav_list))
+        data_split['train'].extend(wav_list[:i_train])
+        data_split['valid'].extend(wav_list[i_train:i_valid])
+        data_split['test'].extend(wav_list[i_valid:])
+    for split in data_split:
+        random.shuffle(data_split[split])
+    return data_split
 
 def split_sets(wav_list, split_ratio):
     """Randomly splits the wav list into training, validation, and test lists.
@@ -167,7 +225,7 @@ def split_sets(wav_list, split_ratio):
 
     Arguments
     ---------
-    wav_lst : list
+    wav_list : list
         list of all the signals in the dataset
     split_ratio: list
         List composed of three integers that sets split ratios for train, valid,
