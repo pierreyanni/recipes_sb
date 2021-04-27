@@ -210,7 +210,8 @@ def split_balanced_sets(wav_lists, split_ratio):
         data_split['train'].extend(wav_list[:i_train])
         data_split['valid'].extend(wav_list[i_train:i_valid])
         data_split['test'].extend(wav_list[i_valid:])
-
+    for split in data_split:
+        random.shuffle(data_split[split])
     return data_split
 
 def split_sets(wav_list, split_ratio):
