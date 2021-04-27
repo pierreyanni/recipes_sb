@@ -16,6 +16,9 @@ output_folder: !ref ./results
 save_folder: !ref <output_folder>/save
 train_log: !ref <output_folder>/train_log.txt
 
+# use pretrained model from 'speechbrain/spkrec-ecapa-voxceleb'
+pretrained_model: False
+
 # Path where data manifest files will be stored
 train_annotation: train.json
 valid_annotation: valid.json
@@ -32,11 +35,11 @@ error_stats: !name:speechbrain.utils.metric_stats.MetricStats
 ckpt_interval_minutes: 15 # save checkpoint every N min
 
 # Training Parameters
-pretrained_model: True
-number_of_epochs: 10
+number_of_epochs: 40
 batch_size: 8  # 8 on colab
-gradient_accumulation: 3
-lr: 0.00001 # 0.001
+gradient_accumulation: 4
+lr: 0.001
+weight_decay: 0.000002
 base_lr: 0.00000001
 max_lr: !ref <lr>
 step_size: 4424  # = 8 * num_obs train set / batch size
@@ -155,7 +158,7 @@ compute_error: !name:speechbrain.nnet.losses.classification_error
 
 opt_class: !name:torch.optim.Adam
     lr: !ref <lr>
-    weight_decay: 0.000002
+    weight_decay: !ref <weight_decay>
 
 lr_annealing: !new:speechbrain.nnet.schedulers.CyclicLRScheduler
     base_lr: !ref <base_lr>
