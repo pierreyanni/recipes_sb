@@ -42,13 +42,15 @@ ckpt_interval_minutes: 15 # save checkpoint every N min
 number_of_epochs: 40
 batch_size: 16 
 gradient_accumulation: 2
-lr: 0.00001
+lr: 0.0001
 weight_decay: 0.005
-base_lr: 0.00000001
+base_lr: 0.000001
 max_lr: !ref <lr>
-step_size: 2216  # 2 to 8 times number of iterations/epoch is suggested
+step_size: 1088 # 2 to 8 times number of iterations/epoch is suggested
+mode: exp_range
+gamma: 0.9998  # divides learning rate by 3 over the first 20 epochs
 sample_rate: 16000
-sentence_len: 3.0 # seconds
+# sentence_len: 3.0 # seconds # useless?
 shuffle: True
 drop_last: False  # use True if last batch has size 1 
 random_chunk: True
@@ -163,10 +165,12 @@ compute_cost: !new:speechbrain.nnet.losses.LogSoftmaxWrapper
 compute_error: !name:speechbrain.nnet.losses.classification_error
 
 opt_class: !name:torch.optim.Adam
-    lr: !ref <lr>
+    lr: !ref <base_lr>
     weight_decay: !ref <weight_decay>
 
 lr_annealing: !new:speechbrain.nnet.schedulers.CyclicLRScheduler
+    mode: !ref <mode>
+    gamma: !ref <gamma>
     base_lr: !ref <base_lr>
     max_lr: !ref <max_lr>
     step_size: !ref <step_size>
