@@ -40,15 +40,16 @@ ckpt_interval_minutes: 15 # save checkpoint every N min
 
 # Training Parameters
 number_of_epochs: 40
-batch_size: 2  # 8 on colab
-gradient_accumulation: 8
+batch_size: 8  # 8 on colab
+gradient_accumulation: 4
 lr: 0.0001
-weight_decay: 0.0001
-base_lr: 0.00000001
+weight_decay: 0.01
+base_lr: 0.000001
 max_lr: !ref <lr>
-step_size: 2216  # 2 to 8 times number of iterations/epoch is suggested
+step_size: 2212  # 4 times number of iterations/epoch (2 to 10 is suggested)
+mode: exp_range
+gamma: 0.9999  # divides learning rate by 3 over the first 20 epochs
 sample_rate: 16000
-sentence_len: 3.0 # seconds
 shuffle: True
 drop_last: False  # use True if last batch has size 1 
 random_chunk: True
@@ -131,7 +132,7 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
 # in sequence. If concat_augment = True, all the augmented signals
 # # are concatenated in a single big batch.
 
-augment_pipeline: [!ref <augment_wavedrop>]
+augment_pipeline: []
 #    !ref <augment_wavedrop>,
 #    !ref <augment_speed>,
 #    !ref <add_rev>,
@@ -146,7 +147,7 @@ mean_var_norm: !new:speechbrain.processing.features.InputNormalization
 
 modules:
     compute_features: !ref <compute_features>
-    augment_wavedrop: !ref <augment_wavedrop>
+    #augment_wavedrop: !ref <augment_wavedrop>
     #augment_speed: !ref <augment_speed>
     #add_rev: !ref <add_rev>
     #add_noise: !ref <add_noise>
@@ -167,6 +168,8 @@ opt_class: !name:torch.optim.Adam
     weight_decay: !ref <weight_decay>
 
 lr_annealing: !new:speechbrain.nnet.schedulers.CyclicLRScheduler
+    mode: !ref <mode>
+    gamma: !ref <gamma>
     base_lr: !ref <base_lr>
     max_lr: !ref <max_lr>
     step_size: !ref <step_size>
