@@ -90,10 +90,10 @@ class SpkIdBrain(sb.Brain):
         if stage == sb.Stage.TRAIN:
             emoid = torch.cat([emoid] * self.n_augment, dim=0)
 
-        loss = self.hparams.compute_cost(predictions, emoid, lens)
+            if hasattr(self.hparams.lr_annealing, "on_batch_end"):
+                self.hparams.lr_annealing.on_batch_end(self.optimizer)
 
-        if hasattr(self.hparams.lr_annealing, "on_batch_end"):
-            self.hparams.lr_annealing.on_batch_end(self.optimizer)
+        loss = self.hparams.compute_cost(predictions, emoid, lens)
 
         if stage != sb.Stage.TRAIN:
             self.error_metrics.append(batch.id, predictions, emoid, lens)
