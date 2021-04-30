@@ -30,7 +30,8 @@ def prepare_data(
     save_json_valid,
     save_json_test,
     split_ratio=[80, 10, 10],
-    balanced=True
+    balanced=True,
+    seed=12,
     ):
     """
     Prepares the json files for the IEMOCAP dataset.
@@ -56,12 +57,17 @@ def prepare_data(
         If True, train, valid and test sets balanced across emotions and
         speakers (so that same speakers present in all sets). If False, random
         assignment.
+    seed : int
+        Seed for reproducibility
 
     Example
     -------
     >>> data_folder = '/path/to/emocap'
     >>> prepare_data(data_path, data_folder, 'train.json', 'valid.json', 'test.json')
     """
+
+    # setting seeds for reproducible code.
+    random.seed(seed)
 
     # Check if this phase is already done (if so, skip it)
     if skip(save_json_train, save_json_valid, save_json_test):

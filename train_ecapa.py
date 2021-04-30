@@ -337,7 +337,8 @@ if __name__ == "__main__":
             "save_json_valid": hparams["valid_annotation"],
             "save_json_test": hparams["test_annotation"],
             "split_ratio": [80, 10, 10],
-            "balanced": hparams["balanced_dataset"]
+            "balanced": hparams["balanced_dataset"],
+            "seed": hparams["seed"],
         },
     )
 
