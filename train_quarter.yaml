@@ -1,0 +1,181 @@
+# ########################################
+# Emotion recognition using ECAPA-TDNN.
+#
+# Author:
+#  * Authors: Hwidong Na & Mirco Ravanelli
+#    Modified by Pierre-Yves Yanni
+# ########################################
+
+# Seed needs to be set at top of yaml, before objects with parameters are made
+seed: 1986
+__set_seed: !!python/object/apply:torch.manual_seed [!ref <seed>]
+
+# Set up folders for reading from and writing to
+# Dataset will be downloaded to the `data_folder`
+data_folder: ./data
+output_folder: !ref ./results
+save_folder: !ref <output_folder>/save
+train_log: !ref <output_folder>/train_log.txt
+
+# proportional representation of emotions and speakers
+balanced_dataset: False
+
+# use pretrained model from 'speechbrain/spkrec-ecapa-voxceleb'
+pretrained_model: False
+
+# Path where data manifest files will be stored
+train_annotation: train.json
+valid_annotation: valid.json
+test_annotation: test.json
+
+# The train logger writes training statistics to a file, as well as stdout.
+train_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
+    save_file: !ref <train_log>
+
+error_stats: !name:speechbrain.utils.metric_stats.MetricStats
+    metric: !name:speechbrain.nnet.losses.classification_error
+        reduction: batch
+
+ckpt_interval_minutes: 15 # save checkpoint every N min
+
+# Training Parameters
+number_of_epochs: 40
+batch_size: 16
+gradient_accumulation: 2
+lr: 0.0001
+weight_decay: 0.00002
+base_lr: 0.000001
+max_lr: !ref <lr>
+step_size: 1088  # 4 times number of iterations/epoch (2 to 10 is suggested)
+mode: exp_range
+gamma: 0.9998  # divides learning rate by 3 over the first 20 epochs
+sample_rate: 16000
+shuffle: True
+random_chunk: True
+
+# Feature parameters
+n_mels: 80
+left_frames: 0
+right_frames: 0
+deltas: False
+
+# Number of emotions
+out_n_neurons: 4 # 3 + neutral
+
+dataloader_options:
+    batch_size: !ref <batch_size>
+    shuffle: !ref <shuffle>
+    num_workers: 2  # 2 on linux but 0 works on windows
+
+# Functions
+compute_features: !new:speechbrain.lobes.features.Fbank
+    n_mels: !ref <n_mels>
+    left_frames: !ref <left_frames>
+    right_frames: !ref <right_frames>
+    deltas: !ref <deltas>
+
+embedding_model: !new:speechbrain.lobes.models.ECAPA_TDNN.ECAPA_TDNN
+    input_size: !ref <n_mels>
+    channels: [256, 256, 256, 256, 768]
+    kernel_sizes: [5, 3, 3, 3, 1]
+    dilations: [1, 2, 3, 4, 1]
+    attention_channels: 32
+    lin_neurons: 48
+
+classifier: !new:speechbrain.lobes.models.ECAPA_TDNN.Classifier
+    input_size: 48
+    out_neurons: !ref <out_n_neurons>
+
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+    limit: !ref <number_of_epochs>
+
+augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
+    sample_rate: !ref <sample_rate>
+    speeds: [100]
+
+# noise
+augment_speed: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
+    sample_rate: !ref <sample_rate>
+    speeds: [95, 100, 105]
+
+add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
+    openrir_folder: !ref <data_folder>
+    openrir_max_noise_len: 3.0  # seconds
+    reverb_prob: 1.0
+    noise_prob: 0.0 
+    noise_snr_low: 0
+    noise_snr_high: 15
+    rir_scale_factor: 1.0
+
+add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+    openrir_folder: !ref <data_folder>
+    openrir_max_noise_len: 3.0  # seconds
+    reverb_prob: 0.0
+    noise_prob: 1.0
+    noise_snr_low: 0
+    noise_snr_high: 15
+    rir_scale_factor: 1.0
+
+add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+    openrir_folder: !ref <data_folder>
+    openrir_max_noise_len: 3.0  # seconds
+    reverb_prob: 1.0
+    noise_prob: 1.0
+    noise_snr_low: 0
+    noise_snr_high: 15
+    rir_scale_factor: 1.0
+
+# Definition of the augmentation pipeline.
+# If concat_augment = False, the augmentation techniques are applied
+# in sequence. If concat_augment = True, all the augmented signals
+# # are concatenated in a single big batch.
+
+augment_pipeline: []
+#    !ref <augment_wavedrop>,
+#    !ref <augment_speed>,
+#    !ref <add_rev>,
+#    !ref <add_noise>,
+#    !ref <add_rev_noise>
+# ]
+concat_augment: True
+
+mean_var_norm: !new:speechbrain.processing.features.InputNormalization
+    norm_type: sentence
+    std_norm: False
+
+modules:
+    compute_features: !ref <compute_features>
+    #augment_wavedrop: !ref <augment_wavedrop>
+    #augment_speed: !ref <augment_speed>
+    #add_rev: !ref <add_rev>
+    #add_noise: !ref <add_noise>
+    #add_rev_noise: !ref <add_rev_noise>
+    embedding_model: !ref <embedding_model>
+    classifier: !ref <classifier>
+    mean_var_norm: !ref <mean_var_norm>
+
+compute_cost: !new:speechbrain.nnet.losses.LogSoftmaxWrapper
+    loss_fn: !new:speechbrain.nnet.losses.AdditiveAngularMargin
+        margin: 0.2
+        scale: 30
+
+compute_error: !name:speechbrain.nnet.losses.classification_error
+
+opt_class: !name:torch.optim.Adam
+    lr: !ref <lr>
+    weight_decay: !ref <weight_decay>
+
+lr_annealing: !new:speechbrain.nnet.schedulers.CyclicLRScheduler
+    mode: !ref <mode>
+    gamma: !ref <gamma>
+    base_lr: !ref <base_lr>
+    max_lr: !ref <max_lr>
+    step_size: !ref <step_size>
+    
+checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
+    checkpoints_dir: !ref <save_folder>
+    recoverables:
+        embedding_model: !ref <embedding_model>
+        classifier: !ref <classifier>
+        normalizer: !ref <mean_var_norm>
+        counter: !ref <epoch_counter>
