@@ -1,11 +1,12 @@
 """
-Downloads and creates data manifest files for EMOCAP (https://sail.usc.edu/iemocap/).
+Downloads and creates data manifest files for IEMOCAP (https://sail.usc.edu/iemocap/).
 For speaker-id, different sentences of the same speaker must appear in train,
 validation, and test sets. In this case, these sets are thus derived from
 splitting the orginal training set intothree chunks.
 
 Authors:
  * Mirco Ravanelli, 2021
+ * Modified by Pierre-Yves Yanni, 2021
 """
 
 import os
@@ -301,9 +302,9 @@ def download_data(destination):
         Place to put dataset.
     """
     train_archive = os.path.join(destination, "IEMOCAP_processed.tar.gz")
-    # download_file(IEMOCAP_URL, train_archive)
     dest_dir = pathlib.Path(train_archive).resolve().parent
     dest_dir.mkdir(parents=True, exist_ok=True)
+    # download_file(IEMOCAP_URL, train_archive)
     gdown.download(IEMOCAP_URL, train_archive, quiet=False) 
     shutil.unpack_archive(train_archive, destination)
 

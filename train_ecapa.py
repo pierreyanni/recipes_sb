@@ -385,10 +385,11 @@ if __name__ == "__main__":
         test_loader_kwargs=hparams["dataloader_options"],
     )
     
+    # Create output file with predictions
     spk_id_brain.output_predictions_test_set(
         test_set=datasets["test"],
         min_key="error",
         test_loader_kwargs=hparams["dataloader_options"],
     )    
-    # Create output file 
+    
     

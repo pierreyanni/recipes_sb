@@ -3,7 +3,7 @@
 #
 # Author:
 #  * Authors: Hwidong Na & Mirco Ravanelli
-#    Modified by Pierre-Yves Yanni
+#  * Modified by Pierre-Yves Yanni
 # ########################################
 
 # Seed needs to be set at top of yaml, before objects with parameters are made
@@ -17,8 +17,12 @@ output_folder: !ref ./results
 save_folder: !ref <output_folder>/save
 train_log: !ref <output_folder>/train_log.txt
 
-# proportional representation of emotions and speakers
+# proportional representation of emotions and speakers 
+# (if True, make sure different speakers is False)
 balanced_dataset: False
+
+# different speakers for train, valid and test sets
+different_speakers: False
 
 # use pretrained model from 'speechbrain/spkrec-ecapa-voxceleb'
 pretrained_model: False
@@ -52,6 +56,7 @@ gamma: 0.9998  # divides learning rate by 3 over the first 20 epochs
 sample_rate: 16000
 shuffle: True
 random_chunk: True
+drop_last: False
 
 # Feature parameters
 n_mels: 80
