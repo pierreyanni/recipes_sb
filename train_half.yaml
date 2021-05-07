@@ -7,7 +7,7 @@
 # ########################################
 
 # Seed needs to be set at top of yaml, before objects with parameters are made
-seed: 1986
+seed: 1968
 __set_seed: !!python/object/apply:torch.manual_seed [!ref <seed>]
 
 # Set up folders for reading from and writing to
@@ -52,6 +52,7 @@ gamma: 0.9998  # divides learning rate by 3 over the first 20 epochs
 sample_rate: 16000
 shuffle: True
 random_chunk: True
+drop_last: False
 
 # Feature parameters
 n_mels: 80
