@@ -17,8 +17,12 @@ output_folder: !ref ./results
 save_folder: !ref <output_folder>/save
 train_log: !ref <output_folder>/train_log.txt
 
-# proportional representation of emotions and speakers
+# proportional representation of emotions and speakers 
+# (if True, make sure different speakers is False)
 balanced_dataset: False
+
+# different speakers for train, valid and test sets
+different_speakers: True
 
 # use pretrained model from 'speechbrain/spkrec-ecapa-voxceleb'
 pretrained_model: False

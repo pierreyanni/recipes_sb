@@ -97,7 +97,7 @@ def prepare_data(
         data_split = split_balanced_sets(wav_lists, split_ratio)
     elif different_speakers:
         wav_list = get_all_files(train_folder, match_and=extension)
-        data_split = split_different_speakers(wav_list, split_ratio)
+        data_split = split_different_speakers(wav_list)
     else:
         wav_list = get_all_files(train_folder, match_and=extension)
         data_split = split_sets(wav_list, split_ratio)
@@ -244,15 +244,15 @@ def split_different_speakers(wav_list):
     random.shuffle(sessions)
     random.shuffle(wav_list)
     
-    for wav in wav_list:
-        session = int(wav[4])
+    for path_wav in wav_list:
+        session = int(os.path.split(path_wav)[-1][4])
         if session in sessions[:3]:
-            data_split['train'].append(wav)
+            data_split['train'].append(path_wav)
         elif session == sessions[3]:
-            data_split['valid'].append(wav)
+            data_split['valid'].append(path_wav)
         else:
-            data_split['test'].append(wav)
-        return data_split
+            data_split['test'].append(path_wav)
+    return data_split
 
 def split_sets(wav_list, split_ratio):
     """Randomly splits the wav list into training, validation, and test lists.
