@@ -338,6 +338,7 @@ if __name__ == "__main__":
             "save_json_test": hparams["test_annotation"],
             "split_ratio": [80, 10, 10],
             "balanced": hparams["balanced_dataset"],
+            "different_speakers": hparams["different_speakers"],
             "seed": hparams["seed"],
         },
     )

@@ -30,7 +30,8 @@ def prepare_data(
     save_json_valid,
     save_json_test,
     split_ratio=[80, 10, 10],
-    balanced=True,
+    balanced=False,
+    different_speakers=False,
     seed=12,
     ):
     """
@@ -90,10 +91,13 @@ def prepare_data(
     )
     extension = [".wav"]
     
-    # Random split the signal list into train, valid, and test sets.
+    # Randomly split the signal list into train, valid, and test sets.
     if balanced:
         wav_lists = get_all_files_balanced(train_folder)
         data_split = split_balanced_sets(wav_lists, split_ratio)
+    elif different_speakers:
+        wav_list = get_all_files(train_folder, match_and=extension)
+        data_split = split_different_speakers(wav_list, split_ratio)
     else:
         wav_list = get_all_files(train_folder, match_and=extension)
         data_split = split_sets(wav_list, split_ratio)
@@ -190,7 +194,7 @@ def get_all_files_balanced(train_folder):
     return wav_lists
 
 def split_balanced_sets(wav_lists, split_ratio):
-    """"Constructs a balanced data set by making sure that every pair 
+    """"Constructs balanced data sets by making sure that every pair 
     (session, emotion) is split between train, valid and test sets according
     to split ratio. Notice that for each session, there is one male and one female
     speaker.
@@ -219,6 +223,36 @@ def split_balanced_sets(wav_lists, split_ratio):
     for split in data_split:
         random.shuffle(data_split[split])
     return data_split
+
+def split_different_speakers(wav_list):
+    """"Constructs train, validation and test sets that do not share common
+    speakers. There are two different speakers in each session. Train set is
+    constituted of 3 sessions, validation set another session and test set the
+    remaining session.
+    
+    Arguments
+    ---------
+    wav_list: list
+        list of all signals in the dataset
+
+    Returns
+    ------
+    dictionary containing train, valid, and test splits.   
+    """
+    data_split = {k: [] for k in ['train', 'valid', 'test']}
+    sessions =  list(range(1, 6))
+    random.shuffle(sessions)
+    random.shuffle(wav_list)
+    
+    for wav in wav_list:
+        session = int(wav[4])
+        if session in sessions[:3]:
+            data_split['train'].append(wav)
+        elif session == sessions[3]:
+            data_split['valid'].append(wav)
+        else:
+            data_split['test'].append(wav)
+        return data_split
 
 def split_sets(wav_list, split_ratio):
     """Randomly splits the wav list into training, validation, and test lists.
