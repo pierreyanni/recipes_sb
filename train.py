@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from enum import Enum, auto
 from tqdm.contrib import tqdm
 from hyperpyyaml import load_hyperpyyaml
-from prepare_iemocap import prepare_data
+from iemocap_prepare import prepare_data
 
 
 # PREPARE MODEL
@@ -305,7 +305,6 @@ if __name__ == "__main__":
             "save_json_valid": hparams["valid_annotation"],
             "save_json_test": hparams["test_annotation"],
             "split_ratio": [80, 10, 10],
-            "balanced": hparams["balanced_dataset"],
             "different_speakers": hparams["different_speakers"],
             "seed": hparams["seed"],
         },

@@ -1,7 +1,8 @@
 # ########################################
-# Emotion recognition using ECAPA-TDNN.
+# Emotion recognition using ECAPA-TDNN
+# (smaller version of model with layer sizes
+# and number of attention heads divided by 2)
 #
-# Author:
 #  * Authors: Hwidong Na & Mirco Ravanelli
 #  * Modified by Pierre-Yves Yanni
 # ########################################
@@ -17,15 +18,10 @@ output_folder: !ref ./results
 save_folder: !ref <output_folder>/save
 train_log: !ref <output_folder>/train_log.txt
 
-# proportional representation of emotions and speakers 
-# (if True, make sure different speakers is False)
-balanced_dataset: False
 
 # different speakers for train, valid and test sets
+# (more challenging exercise: higher error rate)
 different_speakers: False
-
-# use pretrained model from 'speechbrain/spkrec-ecapa-voxceleb'
-pretrained_model: False
 
 # Path where data manifest files will be stored
 train_annotation: train.json
